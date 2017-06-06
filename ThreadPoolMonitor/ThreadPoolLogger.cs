@@ -41,10 +41,11 @@ namespace ThreadPoolMonitor
 
         protected virtual void LogUsage(ThreadPoolUsageStats stats)
         {
-            string message = string.Format("[{0}] IOCP:(Busy={1},Min={2},Max={3}), WORKER:(Busy={4},Min={5},Max={6})", 
+            string message = string.Format("[{0}] IOCP:(Busy={1},Min={2},Max={3}), WORKER:(Busy={4},Min={5},Max={6}), Local CPU: {7}", 
                 DateTimeOffset.UtcNow.ToString("u"),
                 stats.BusyIoThreads, stats.MinIoThreads, stats.MaxIoThreads,
-                stats.BusyWorkerThreads, stats.MinWorkerThreads, stats.MaxWorkerThreads
+                stats.BusyWorkerThreads, stats.MinWorkerThreads, stats.MaxWorkerThreads,
+                PerfCounterHelper.GetSystemCPU()
                 );
             
             Console.WriteLine(message);
@@ -87,7 +88,7 @@ namespace ThreadPoolMonitor
         }
     }
 
-    public class ThreadPoolUsageStats
+    public struct ThreadPoolUsageStats
     {
         public int BusyIoThreads { get; set; }
 
