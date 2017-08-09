@@ -9,7 +9,9 @@ public class Program {
     public static void main(String[] args) {
 
         try {
-            Logging.writeLine("Working Dir: %s", System.getProperty("user.dir"));
+            printSystemInfo();
+
+
             Path filePath = Paths.get(System.getProperty("user.dir"), "RedisInstances.txt");
             RedisInstance.loadFromFile(filePath);
 
@@ -17,32 +19,50 @@ public class Program {
 
             IRedisClient client = options.getClient();
 
-
             Redis.initialize(client);
 
             Logging.writeLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            Logging.writeLine("Starting Scenario: %s, threads=%d, iterations=%d", options.getScenario(), options.getThreadCount(), options.getIterationCount());
+            Logging.writeLine("Starting Scenario: %s, threads=%d, iterations=%d, host=%s",
+                    options.getScenario(),
+                    options.getThreadCount(),
+                    options.getIterationCount(),
+                    client.getHostName());
             Logging.writeLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
-            switch(options.getScenario().toLowerCase()) {
-                case "load":
-                    LoadTests.Run(options.getThreadCount(), options.getIterationCount());
-                    break;
-                case "latency":
-                    LatencyPercentileTests.Run(options.getThreadCount(), options.getIterationCount());
-                    break;
-                default:
-                    Logging.writeLine("UNKNOWN SCENARIO: " + options.getScenario());;
-                    return;
-            }
-            //IdleConnectionTests.Run(11*60);
-            //simpleGetTest();
-            //RedisConsole();
+            ITestScenario scenario = getTestScenario(options.getScenario());
+
+            scenario.run(options);
+
         }
         catch( Exception ex)
         {
             Logging.logException(ex);
         }
+    }
+
+    private static void printSystemInfo() {
+        Logging.writeLine("Working Dir: %s", System.getProperty("user.dir"));
+        Logging.writeLine("Available Processors: %d", Runtime.getRuntime().availableProcessors());
+    }
+
+    public static ITestScenario getTestScenario(String scenarioName)
+    {
+        ITestScenario result;
+        switch(scenarioName.toLowerCase()) {
+            case "load":
+                result = new LoadTests();
+                break;
+            case "latency":
+                result = new LatencyPercentileTests();
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown Scenario: " + scenarioName);
+        }
+        //IdleConnectionTests.run(11*60);
+        //simpleGetTest();
+        //RedisConsole();
+
+        return result;
     }
 
     public static void simpleGetTest(){

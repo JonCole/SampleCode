@@ -1,9 +1,12 @@
+import org.springframework.beans.FatalBeanException;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisBusyException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 import javax.net.ssl.*;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
 
 public class JedisRedisClient implements IRedisClient {
 
@@ -21,19 +24,15 @@ public class JedisRedisClient implements IRedisClient {
         redisInstance = instance;
     }
 
+    public String getHostName() {return redisInstance.getHostname(); }
+
     @Override
     public String get(String key) {
         try(Jedis jedis = getPoolInstance().getResource())
         {
             return jedis.get(key);
-        } catch (JedisConnectionException jce) {
-            Logging.write("C");
-        } catch (JedisBusyException jbe) {
-            Logging.write("B");
-        } catch (JedisException je) {
-            Logging.write("C");
         } catch (Exception ex) {
-            Logging.logException(ex);
+            LogError(ex);
         }
         return null;
     }
@@ -43,14 +42,8 @@ public class JedisRedisClient implements IRedisClient {
         try(Jedis jedis = getPoolInstance().getResource())
         {
             jedis.ping();
-        } catch (JedisConnectionException jce) {
-            Logging.write("C");
-        } catch (JedisBusyException jbe) {
-            Logging.write("B");
-        } catch (JedisException je) {
-            Logging.write("C");
         } catch (Exception ex) {
-            Logging.logException(ex);
+            LogError(ex);
         }
     }
 
@@ -59,14 +52,8 @@ public class JedisRedisClient implements IRedisClient {
         try(Jedis jedis = getPoolInstance().getResource())
         {
             return jedis.info();
-        } catch (JedisConnectionException jce) {
-            Logging.write("C");
-        } catch (JedisBusyException jbe) {
-            Logging.write("B");
-        } catch (JedisException je) {
-            Logging.write("C");
         } catch (Exception ex) {
-            Logging.logException(ex);
+            LogError(ex);
         }
 
         return "";
@@ -77,14 +64,8 @@ public class JedisRedisClient implements IRedisClient {
         try(Jedis jedis = getPoolInstance().getResource())
         {
             jedis.set(key, value);
-        } catch (JedisConnectionException jce) {
-            Logging.write("C");
-        } catch (JedisBusyException jbe) {
-            Logging.write("B");
-        } catch (JedisException je) {
-            Logging.write("E");
         } catch (Exception ex) {
-            Logging.logException(ex);
+            LogError(ex);
         }
     }
 
@@ -99,7 +80,7 @@ public class JedisRedisClient implements IRedisClient {
                     SSLSocketFactory sslSocketFactory = null; // null means use default
                     SSLParameters sslParameters = null; // null means use default
                     HostnameVerifier hostnameVerifier = new SimpleHostNameVerifier(redisInstance.getHostname());
-                    pool = new JedisPool(poolConfig, redisInstance.getHostname(), port, connectTimeout, operationTimeout, redisInstance.getKey(), db,
+                    pool = new JedisPool(poolConfig, redisInstance.getHostname(), port, connectTimeout, operationTimeout, redisInstance.getPassword(), db,
                             clientName, useSsl, sslSocketFactory, sslParameters, hostnameVerifier);
                 }
             }
@@ -134,6 +115,25 @@ public class JedisRedisClient implements IRedisClient {
         return config;
     }
 
+    public static void LogError(Exception ex)
+    {
+        if (ex instanceof JedisConnectionException) {
+            Throwable cause = ex.getCause();
+            if (cause != null && cause instanceof SocketTimeoutException)
+                Logging.write("T");
+            else
+                Logging.write("C");
+        } else if (ex instanceof JedisBusyException) {
+            Logging.write("B");
+        } else if (ex instanceof JedisException) {
+            Logging.write("E");
+        } else if (ex instanceof IOException){
+            Logging.write("C");
+        } else {
+            Logging.logException(ex);
+            throw new FatalBeanException(ex.getMessage(), ex); // unexpected exception type, so abort test for investigation
+        }
+    }
     private static class SimpleHostNameVerifier implements HostnameVerifier {
 
         private String exactCN;

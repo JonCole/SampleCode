@@ -20,7 +20,7 @@ public class RedisInstance {
         return hostname;
     }
 
-    public String getKey()
+    public String getPassword()
     {
         return key;
     }
@@ -28,6 +28,7 @@ public class RedisInstance {
     public static RedisInstance GeoReplicated() { return map.get("GeoReplicated"); }
     public static RedisInstance Clustered() { return map.get("Clustered"); }
     public static RedisInstance StandardC1() { return map.get("StandardC1"); }
+    public static RedisInstance PremiumNonClustered() { return map.get("PremiumNonClustered"); }
 
     public static void loadFromFile(Path filePath)
     {
@@ -35,8 +36,10 @@ public class RedisInstance {
 
             String line;
             while ((line = reader.readLine()) !=  null) {
-                String [] tokens = line.split(":", 3);
-                map.put(tokens[0], new RedisInstance(tokens[1], tokens[2]));
+                if (line.length() > 0) {
+                    String[] tokens = line.split(":", 3);
+                    map.put(tokens[0], new RedisInstance(tokens[1], tokens[2]));
+                }
             }
         }
         catch( IOException ex){

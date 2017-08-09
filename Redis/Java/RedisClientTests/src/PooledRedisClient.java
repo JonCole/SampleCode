@@ -10,6 +10,8 @@ public class PooledRedisClient implements IRedisClient{
         this.clients = clients;
     }
 
+    public String getHostName() {return clients.get(0).getHostName(); }
+
     @Override
     public void set(String key, String value) {
         getClient().set(key, value);

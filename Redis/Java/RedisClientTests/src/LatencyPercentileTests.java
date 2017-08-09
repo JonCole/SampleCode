@@ -1,16 +1,21 @@
+import com.sun.istack.internal.NotNull;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class LatencyPercentileTests {
+public class LatencyPercentileTests implements ITestScenario{
 
-    private static AtomicInteger threadCounter = new AtomicInteger(0);
-    private static ArrayList<Double>  aggregatedData = new ArrayList<Double>();
+    private AtomicInteger threadCounter = new AtomicInteger(0);
+    private ArrayList<Double>  aggregatedData = new ArrayList<Double>();
     private static DecimalFormat dblFormat = new DecimalFormat("###.#");
 
-    public static void Run(int threads, int iterations) {
+    public void run(@NotNull CommandLineArgs options) {
+
+        int threads = options.getThreadCount();
+        int iterations = options.getIterationCount();
 
         ArrayList<WorkerThread> list = new ArrayList<WorkerThread>();
 
@@ -44,7 +49,7 @@ public class LatencyPercentileTests {
         }
     }
 
-    private static void printResults() {
+    private void printResults() {
 
         Logging.writeLine( "--------------------------------------------------");
         Collections.sort(aggregatedData);
@@ -66,7 +71,7 @@ public class LatencyPercentileTests {
     }
 
 
-    private static String getPercentile(Double percentile)
+    private  String getPercentile(Double percentile)
     {
         int count = aggregatedData.size();
         int index = (int)Math.floor((percentile/100) * count);
@@ -78,7 +83,7 @@ public class LatencyPercentileTests {
         return String.format("%5sth Percentile   : %sms", dblFormat.format(percentile), dblFormat.format(val));
     }
 
-    private static WorkerThread startLoadTest(int iterations)
+    private WorkerThread startLoadTest(int iterations)
     {
         Worker work = new Worker(){
             @Override
@@ -102,8 +107,8 @@ public class LatencyPercentileTests {
                 //Logging.writeLine("\r\nStarting real latency tests...");
                 for(int i = 0; i < iterations; i++){
 
-                    //if (i % 1000 == 0)
-                    //    Logging.write(String.format("[%d/%d]", i, iterations));
+                    if (i % 1000 == 0)
+                        Logging.write(String.format("[%d/%d]", i, iterations));
                     IRedisClient client = Redis.getClient();
                     long start = Stopwatch.startNew();
                     client.get(key);
@@ -121,7 +126,7 @@ public class LatencyPercentileTests {
         return WorkerThread.start(work);
     }
 
-    private static synchronized void AggregateResults(ArrayList<Double> threadResults)
+    private synchronized void AggregateResults(ArrayList<Double> threadResults)
     {
         aggregatedData.addAll(threadResults);
     }

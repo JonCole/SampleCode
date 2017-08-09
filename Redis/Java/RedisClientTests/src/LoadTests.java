@@ -1,14 +1,17 @@
+import com.sun.istack.internal.NotNull;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class LoadTests {
-    private static AtomicInteger threadCounter = new AtomicInteger(0);
+public class LoadTests implements ITestScenario {
+    private  static AtomicInteger threadCounter = new AtomicInteger(0);
     private static int writePercent = 10;
 
+    public void run(@NotNull CommandLineArgs options) {
 
-    public static void Run(int threadCount, int iterationCount) {
+        int threadCount = options.getThreadCount();
+        int iterationCount = options.getIterationCount();
 
         ArrayList<WorkerThread> list = new ArrayList<WorkerThread>();
 

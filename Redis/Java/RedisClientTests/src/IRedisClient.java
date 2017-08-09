@@ -3,4 +3,5 @@ public interface IRedisClient {
     void set(String key, String value);
     void ping();
     String info();
+    String getHostName();
 }

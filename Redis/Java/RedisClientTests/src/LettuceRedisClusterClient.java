@@ -14,6 +14,8 @@ public class LettuceRedisClusterClient implements IRedisClient {
         redisInstance = instance;
     }
 
+    public String getHostName() {return redisInstance.getHostname(); }
+
     public String get(String key)
     {
         try {
@@ -54,14 +56,15 @@ public class LettuceRedisClusterClient implements IRedisClient {
 
     private RedisClusterClient getRedisClient()
     {
+
         RedisURI uri = RedisURI.builder()
                 .withHost(redisInstance.getHostname())
-                .withPassword(redisInstance.getKey())
+                .withPassword(redisInstance.getPassword())
                 .withPort(6380)
                 .withSsl(true)
                 .withDatabase(0)
                 .build();
-        RedisClusterClient client = RedisClusterClient.create(uri);
+        RedisClusterClient client = RedisClusterClient.create(LettuceRedisClient.getClientResources(), uri);
 
         ClusterClientOptions options = ClusterClientOptions.builder()
                 .validateClusterNodeMembership(false)

@@ -23,10 +23,10 @@ public class CommandLineArgs {
             switch(key)
             {
                 case "-t":
-                    result.threadCount = Integer.parseInt(value);
+                    result.threadCount = parseInt(value);
                     break;
                 case "-i":
-                    result.iterationCount = Integer.parseInt(value);
+                    result.iterationCount = parseInt(value);
                     break;
                 case "-s":
                     result.scenario = value;
@@ -55,9 +55,15 @@ public class CommandLineArgs {
             case "jedis":
                 result = new JedisRedisClient(RedisInstance.StandardC1());
                 break;
+            case "j-p": //jedis with premium sku server
+                result = new JedisRedisClient(RedisInstance.PremiumNonClustered());
+                break;
             case "l":
             case "lettuce":
                 result = new LettuceRedisClient(RedisInstance.StandardC1());
+                break;
+            case "l-p": //Lettuce with premium sku server
+                result = new LettuceRedisClient(RedisInstance.PremiumNonClustered());
                 break;
             case "lc":
                 result = new LettuceRedisClusterClient(RedisInstance.Clustered());
@@ -65,6 +71,11 @@ public class CommandLineArgs {
             case "lp":
                 result = getPooledClient(5, () -> new LettuceRedisClient(RedisInstance.StandardC1()));
                 break;
+            case "jc":
+                result = new JedisClusterClient(RedisInstance.Clustered());
+                break;
+            default:
+                throw new IllegalArgumentException("client unknown: " + client);
         }
 
         if (result == null) {
@@ -79,8 +90,13 @@ public class CommandLineArgs {
         return result;
     }
 
-    private static IRedisClient getPooledClient(int size, @NotNull IRedisClientFactory factory)
-    {
+    public static int parseInt(@NotNull String s) {
+        if ( s.length() == 0 || s.compareToIgnoreCase("max") == 0)
+            return Integer.MAX_VALUE;
+        return Integer.parseInt(s);
+    }
+
+    private static IRedisClient getPooledClient(int size, @NotNull IRedisClientFactory factory) {
         ArrayList<IRedisClient> list = new ArrayList<>();
         for(int i = 0; i < size; i++)
             list.add(factory.create());
