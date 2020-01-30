@@ -15,8 +15,8 @@ namespace BandwidthMonitor
         public BandwidthLogger(TimeSpan logFrequency)
         {
             if (logFrequency <= TimeSpan.Zero)
-            { 
-                throw new ArgumentOutOfRangeException("logFrequency"); 
+            {
+                throw new ArgumentOutOfRangeException("logFrequency");
             }
 
             _logFrequency = logFrequency;
@@ -31,7 +31,7 @@ namespace BandwidthMonitor
             {
                 const long bitsPerByte = 8;
                 const double oneMeg = 1024 * 1024;
-                
+
 
                 while (!_disposed)
                 {
@@ -40,13 +40,13 @@ namespace BandwidthMonitor
                     long bytesRead;
                     long bytesWrite;
                     GetNetworkUsage(out bytesRead, out bytesWrite);
-                    
+
                     DateTimeOffset currentTime = DateTimeOffset.UtcNow;
                     TimeSpan elapsed = currentTime - _previousComputeTime;
-                    
+
                     long readDelta = (bytesRead - _previousReadBytes);
                     long writeDelta = (bytesWrite - _previousWriteBytes);
-                    
+
                     _previousReadBytes = bytesRead;
                     _previousWriteBytes = bytesWrite;
                     _previousComputeTime = currentTime;
@@ -57,7 +57,7 @@ namespace BandwidthMonitor
                     LogUsage(mbitsReadPerSecond, mbitsWritePerSecond);
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
@@ -88,7 +88,7 @@ namespace BandwidthMonitor
                     bytesWrite += nicbytesWrite;
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
 
             }
