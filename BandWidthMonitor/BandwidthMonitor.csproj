@@ -8,7 +8,7 @@
 		For windows values for runtime identifiers are win10-x64, win10-x86, win81-x64 etc.
 		For Linux identifer values are linux-x64, linux-musl-x64, linux-arm, rhel-x64 etc.
 		More about identifiers, refer the official microsoft docs at https://docs.microsoft.com/en-us/dotnet/core/rid-catalog-->
-		<RuntimeIdentifier>linux-x64</RuntimeIdentifier>				
+		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>				
 	</PropertyGroup>
 
 	<ItemGroup>
