@@ -13,6 +13,6 @@ namespace ThreadPoolMonitor
                 Console.WriteLine("Press Enter to close application");
                 Console.ReadLine();
             }
-        }        
+        }
     }
 }

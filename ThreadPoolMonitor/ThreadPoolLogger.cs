@@ -4,102 +4,102 @@ using System.Threading.Tasks;
 
 namespace ThreadPoolMonitor
 {
-    class ThreadPoolLogger : IDisposable
-    {
-        private TimeSpan _logFrequency;
-        private bool _disposed;
+	class ThreadPoolLogger : IDisposable
+	{
+		private TimeSpan _logFrequency;
+		private bool _disposed;
 
-        public ThreadPoolLogger(TimeSpan logFrequency)
-        {
-            if (logFrequency <= TimeSpan.Zero)
-            { 
-                throw new ArgumentOutOfRangeException("logFrequency"); 
-            }
+		public ThreadPoolLogger(TimeSpan logFrequency)
+		{
+			if (logFrequency <= TimeSpan.Zero)
+			{
+				throw new ArgumentOutOfRangeException("logFrequency");
+			}
 
-            _logFrequency = logFrequency;                        
-            StartLogging();
-        }
+			_logFrequency = logFrequency;
+			StartLogging();
+		}
 
-        private async void StartLogging()
-        {
-            try
-            {
-                while (!_disposed)
-                {
-                    await Task.Delay(_logFrequency);
+		private async void StartLogging()
+		{
+			try
+			{
+				while (!_disposed)
+				{
+					await Task.Delay(_logFrequency);
 
-                    var stats = GetThreadPoolStats();
+					var stats = GetThreadPoolStats();
 
-                    LogUsage(stats);
-                }
-            }
-            catch(Exception)
-            {
+					LogUsage(stats);
+				}
+			}
+			catch (Exception)
+			{
 
-            }
-        }
+			}
+		}
 
-        protected virtual void LogUsage(ThreadPoolUsageStats stats)
-        {
-            string message = string.Format("[{0}] IOCP:(Busy={1},Min={2},Max={3}), WORKER:(Busy={4},Min={5},Max={6}), Local CPU: {7}", 
-                DateTimeOffset.UtcNow.ToString("u"),
-                stats.BusyIoThreads, stats.MinIoThreads, stats.MaxIoThreads,
-                stats.BusyWorkerThreads, stats.MinWorkerThreads, stats.MaxWorkerThreads,
-                PerfCounterHelper.GetSystemCPU()
-                );
-            
-            Console.WriteLine(message);
-        }
+		protected virtual void LogUsage(ThreadPoolUsageStats stats)
+		{
+			string message = string.Format("[{0}] IOCP:(Busy={1},Min={2},Max={3}), WORKER:(Busy={4},Min={5},Max={6}), Local CPU: {7}",
+				DateTimeOffset.UtcNow.ToString("u"),
+				stats.BusyIoThreads, stats.MinIoThreads, stats.MaxIoThreads,
+				stats.BusyWorkerThreads, stats.MinWorkerThreads, stats.MaxWorkerThreads,
+				PerfCounterHelper.GetSystemCPU()
+				);
 
-        /// <summary>
-        /// Returns the current thread pool usage statistics for the CURRENT AppDomain/Process
-        /// </summary>
-        public static ThreadPoolUsageStats GetThreadPoolStats()
-        {
-            //BusyThreads =  TP.GetMaxThreads() –TP.GetAVailable();
-            //If BusyThreads >= TP.GetMinThreads(), then threadpool growth throttling is possible.
+			Console.WriteLine(message);
+		}
 
-            int maxIoThreads, maxWorkerThreads;
-            ThreadPool.GetMaxThreads(out maxWorkerThreads, out maxIoThreads);
+		/// <summary>
+		/// Returns the current thread pool usage statistics for the CURRENT AppDomain/Process
+		/// </summary>
+		public static ThreadPoolUsageStats GetThreadPoolStats()
+		{
+			//BusyThreads =  TP.GetMaxThreads() –TP.GetAVailable();
+			//If BusyThreads >= TP.GetMinThreads(), then threadpool growth throttling is possible.
 
-            int freeIoThreads, freeWorkerThreads;
-            ThreadPool.GetAvailableThreads(out freeWorkerThreads, out freeIoThreads);
+			int maxIoThreads, maxWorkerThreads;
+			ThreadPool.GetMaxThreads(out maxWorkerThreads, out maxIoThreads);
 
-            int minIoThreads, minWorkerThreads;
-            ThreadPool.GetMinThreads(out minWorkerThreads, out minIoThreads);
+			int freeIoThreads, freeWorkerThreads;
+			ThreadPool.GetAvailableThreads(out freeWorkerThreads, out freeIoThreads);
 
-            int busyIoThreads = maxIoThreads - freeIoThreads;
-            int busyWorkerThreads = maxWorkerThreads - freeWorkerThreads;
+			int minIoThreads, minWorkerThreads;
+			ThreadPool.GetMinThreads(out minWorkerThreads, out minIoThreads);
 
-            return new ThreadPoolUsageStats
-            {
-                BusyIoThreads = busyIoThreads,
-                MinIoThreads = minIoThreads,
-                MaxIoThreads = maxIoThreads,
-                BusyWorkerThreads = busyWorkerThreads,
-                MinWorkerThreads = minWorkerThreads,
-                MaxWorkerThreads = maxWorkerThreads,
-            };
-        }
+			int busyIoThreads = maxIoThreads - freeIoThreads;
+			int busyWorkerThreads = maxWorkerThreads - freeWorkerThreads;
 
-        public void Dispose()
-        {
-            _disposed = true;
-        }
-    }
+			return new ThreadPoolUsageStats
+			{
+				BusyIoThreads = busyIoThreads,
+				MinIoThreads = minIoThreads,
+				MaxIoThreads = maxIoThreads,
+				BusyWorkerThreads = busyWorkerThreads,
+				MinWorkerThreads = minWorkerThreads,
+				MaxWorkerThreads = maxWorkerThreads,
+			};
+		}
 
-    public struct ThreadPoolUsageStats
-    {
-        public int BusyIoThreads { get; set; }
+		public void Dispose()
+		{
+			_disposed = true;
+		}
+	}
 
-        public int MinIoThreads { get; set; }
+	public struct ThreadPoolUsageStats
+	{
+		public int BusyIoThreads { get; set; }
 
-        public int MaxIoThreads { get; set; }
+		public int MinIoThreads { get; set; }
 
-        public int BusyWorkerThreads { get; set; }
+		public int MaxIoThreads { get; set; }
 
-        public int MinWorkerThreads { get; set; }
+		public int BusyWorkerThreads { get; set; }
 
-        public int MaxWorkerThreads { get; set; }
-    }
+		public int MinWorkerThreads { get; set; }
+
+		public int MaxWorkerThreads { get; set; }
+	}
 }

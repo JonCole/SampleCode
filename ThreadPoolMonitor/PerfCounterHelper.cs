@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace ThreadPoolMonitor
 {
@@ -18,7 +16,7 @@ namespace ThreadPoolMonitor
             float systemCPU;
             if (PerfCounterHelper.TryGetSystemCPU(out systemCPU))
             {
-                cpu = Math.Round(systemCPU, 2) + "%"; 
+                cpu = Math.Round(systemCPU, 2) + "%";
             }
             return cpu;
         }
