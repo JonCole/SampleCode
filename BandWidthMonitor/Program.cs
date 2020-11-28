@@ -1,6 +1,7 @@
-﻿using System;
+﻿using BandwidthMonitor;
+using System;
 
-namespace BandwidthMonitor
+namespace BandWidthMonitor
 {
     class Program
     {
@@ -11,6 +12,6 @@ namespace BandwidthMonitor
                 Console.WriteLine("Press Enter to close application");
                 Console.ReadLine();
             }
-        }        
+        }
     }
 }
